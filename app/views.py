@@ -11,10 +11,11 @@ def index_page(request):
 # esta función obtiene 2 listados que corresponden a las imágenes de la API y los favoritos del usuario, y los usa para dibujar el correspondiente template.
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 def home(request):
-    images = []
+    images = getAllImages()  # Llama a la función
+    print(images)  # Agrega esto para verificar si se están recibiendo imágenes correctamente
     favourite_list = []
-
     return render(request, 'home.html', { 'images': images, 'favourite_list': favourite_list })
+
 
 def search(request):
     search_msg = request.POST.get('query', '')
@@ -32,8 +33,8 @@ def getAllImages(input=None):
     url = f"https://rickandmortyapi.com/api/character/?name={input}" if input else "https://rickandmortyapi.com/api/character"
     response = requests.get(url)
     data = response.json()
-    characters = data['results']
-    
+    print(data)  # Verifica qué datos estás obteniendo desde la API
+    characters = data.get('results', [])
     cards = []
     for character in characters:
         cards.append({
