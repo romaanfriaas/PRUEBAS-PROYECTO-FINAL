@@ -27,6 +27,23 @@ def search(request):
         return redirect('home')
 
 
+def getAllImages(input=None):
+    url = f"https://rickandmortyapi.com/api/character/?name={input}" if input else "https://rickandmortyapi.com/api/character"
+    response = requests.get(url)
+    data = response.json()
+    characters = data['results']
+    
+    cards = []
+    for character in characters:
+        cards.append({
+            'name': character['name'],
+            'image': character['image'],
+            'status': character['status'],
+            'location': character['location']['name'],
+            'episode': character['episode'][0].split("/")[-1]
+        })
+    return cards
+
 # Estas funciones se usan cuando el usuario está logueado en la aplicación.
 @login_required
 def getAllFavouritesByUser(request):
