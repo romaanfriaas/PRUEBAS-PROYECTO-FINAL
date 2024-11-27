@@ -26,6 +26,7 @@ def search(request):
     else:
         return redirect('home')
 
+import requests
 
 def getAllImages(input=None):
     url = f"https://rickandmortyapi.com/api/character/?name={input}" if input else "https://rickandmortyapi.com/api/character"
