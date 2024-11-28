@@ -1,4 +1,5 @@
-{% extends 'header.html' %} {% block content %}
+{% extends 'header.html' %} 
+{% block content %}
 <main>
     <h1 class="text-center">Buscador Rick & Morty</h1>
 
@@ -38,7 +39,8 @@
         {% else %}
         {% for img in images %}
         <div class="col">
-            <div class="card mb-3 ms-5" style="max-width: 540px;">
+            <!-- Agregamos clases dinámicas según el estado -->
+            <div class="card mb-3 ms-5 {% if img.status == 'Alive' %}border-success{% elif img.status == 'Dead' %}border-danger{% else %}border-warning{% endif %}" style="max-width: 540px;">
                 <div class="row g-0">
                     <div class="col-md-4">
                         <img src="{{ img.image }}" class="card-img-top" alt="{{ img.name }}">
