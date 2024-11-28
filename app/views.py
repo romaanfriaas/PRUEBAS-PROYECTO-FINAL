@@ -11,21 +11,22 @@ def index_page(request):
 # esta función obtiene 2 listados que corresponden a las imágenes de la API y los favoritos del usuario, y los usa para dibujar el correspondiente template.
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 def home(request):
-    images = getAllImages()  # Llama a la función
-    print(images)  # Agrega esto para verificar si se están recibiendo imágenes correctamente
-    favourite_list = []
-    return render(request, 'home.html', { 'images': images, 'favourite_list': favourite_list })
-
+    images = getAllImages()  # Obtén todas las imágenes
+    favourite_list = []  # Puedes implementar favoritos si lo necesitas
+    return render(request, 'home.html', {'images': images, 'favourite_list': favourite_list})
 
 def search(request):
-    search_msg = request.POST.get('query', '')
+    search_msg = request.POST.get('query', '').strip()  # Limpia el texto ingresado
 
-    # si el texto ingresado no es vacío, trae las imágenes y favoritos desde services.py,
-    # y luego renderiza el template (similar a home).
-    if (search_msg != ''):
-        pass
-    else:
+    if not search_msg:
+        # Si no se ingresa texto, muestra todas las imágenes
         return redirect('home')
+
+    # Filtra las imágenes basándote en el texto ingresado
+    images = getAllImages(input=search_msg)
+    favourite_list = []  # Implementa favoritos si es necesario
+
+    return render(request, 'home.html', {'images': images, 'favourite_list': favourite_list})
 
 import requests
 
