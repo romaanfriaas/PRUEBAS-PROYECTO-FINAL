@@ -19,7 +19,7 @@
                 {% endif %}
         
                 <!-- Enumerar todas las páginas -->
-                {% for page in range(1, info.pages + 1) %}
+                {% for page in page_range %}
                 <li class="page-item {% if page == current_page %}active{% endif %}">
                     <a class="page-link" href="?page={{ page }}">{{ page }}</a>
                 </li>

@@ -14,45 +14,25 @@ def index_page(request):
 # esta función obtiene 2 listados que corresponden a las imágenes de la API y los favoritos del usuario, y los usa para dibujar el correspondiente template.
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
-def home(request):
-    # Obtén el número de página actual desde la URL (default: 1)
-    page = request.GET.get('page', 1)
+def home(request, page=1):
+    images = getAllImages(page=page)  # Ajusta tu función para recibir la página.
+    favourite_list = []  # Aquí puedes implementar favoritos si lo necesitas
 
-    # Llama a la API con el parámetro de página
-    url = f"https://rickandmortyapi.com/api/character/?page={page}"
-    response = requests.get(url)
-    if response.status_code != 200:
-        return render(request, 'home.html', {'images': [], 'favourite_list': []})
-
+    # Obtén los datos de la API
+    response = requests.get(f"https://rickandmortyapi.com/api/character/?page={page}")
     data = response.json()
-    characters = data.get('results', [])
-    info = data.get('info', {})  # Contiene información de la paginación
+    info = data.get('info', {})
 
-    # Prepara los datos de los personajes
-    images = []
-    for character in characters:
-        images.append({
-            'id': character['id'],
-            'name': character['name'],
-            'image': character['image'],
-            'status': character['status'],
-            'location': character['location']['name'],
-            'episode': character['episode'][0].split("/")[-1],
-        })
+    # Generamos el rango de páginas para la paginación
+    page_range = range(1, info['pages'] + 1)
 
-    favourite_list = []
-    if request.user.is_authenticated:
-        # Obtén los favoritos del usuario autenticado
-        favourite_list = getAllFavouritesByUser(request)
-
-    # Renderiza la plantilla con los datos de paginación
-    context = {
-        'images': images,
+    return render(request, 'home.html', {
+        'images': images, 
         'favourite_list': favourite_list,
-        'info': info,  # Información para los botones de paginación
-        'current_page': int(page),
-    }
-    return render(request, 'home.html', context)
+        'info': info,  # Asegúrate de enviar toda la info
+        'page_range': page_range,  # Pasa el rango de páginas a la plantilla
+        'current_page': page  # Página actual
+    })
 
 def search(request):
     search_msg = request.POST.get('query', '').strip()  # Limpia el texto ingresado
