@@ -15,7 +15,7 @@ def index_page(request):
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
 def home(request, page=1):
-    images = getAllImages(page=page)  # Ajusta tu función para recibir la página.
+    images = getAllImages(page=page)  # Ahora la función acepta el parámetro 'page'
     favourite_list = []  # Aquí puedes implementar favoritos si lo necesitas
 
     # Obtén los datos de la API
@@ -49,8 +49,12 @@ def search(request):
 
 import requests
 
-def getAllImages(input=None):
-    url = f"https://rickandmortyapi.com/api/character/?name={input}" if input else "https://rickandmortyapi.com/api/character"
+def getAllImages(page=1, input=None):
+    # Construir la URL con la página incluida
+    url = f"https://rickandmortyapi.com/api/character/?page={page}"
+    if input:
+        url += f"&name={input}"  # Si se pasa una búsqueda, añadimos el parámetro 'name'
+    
     response = requests.get(url)
     if response.status_code != 200:
         return []  # Manejo de error
