@@ -5,23 +5,38 @@
 
     <div class="d-flex justify-content-end" style="margin-bottom: 1%; margin-right: 2rem;">
         <!-- Selector de página -->
-        <nav aria-label="...">
-            <ul class="pagination">
-                <li class="page-item disabled">
-                    <a class="page-link">⬅️</a>
-                </li>
-                <li class="page-item active" aria-current="page">
-                    <a class="page-link" href="#">1</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">2</a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">➡️</a>
-                </li>
-            </ul>
-        </nav>
+        <nav aria-label="Paginación">
+    <ul class="pagination">
+        <!-- Botón "anterior" -->
+        {% if info.prev %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ current_page|add:-1 }}">⬅️</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link">⬅️</a>
+        </li>
+        {% endif %}
+
+        <!-- Enumerar todas las páginas -->
+        {% for page in range(1, info.pages|add:1) %}
+        <li class="page-item {% if page == current_page %}active{% endif %}">
+            <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+        </li>
+        {% endfor %}
+
+        <!-- Botón "siguiente" -->
+        {% if info.next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ current_page|add:1 }}">➡️</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link">➡️</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
     </div>
 
     <div class="d-flex justify-content-center" style="margin-bottom: 1%">
