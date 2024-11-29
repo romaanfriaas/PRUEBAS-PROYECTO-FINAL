@@ -34,6 +34,7 @@ def home(request, page=1):
         'current_page': page  # Página actual
     })
 
+
 def search(request):
     search_msg = request.POST.get('query', '').strip()  # Limpia el texto ingresado
 
