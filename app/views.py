@@ -15,7 +15,7 @@ def index_page(request):
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
 def home(request, page=1):
-    images = getAllImages(page=page)  # Ahora la función acepta el parámetro 'page'
+    images = getAllImages(page=page)  # Obtener los personajes de la página solicitada
     favourite_list = []  # Aquí puedes implementar favoritos si lo necesitas
 
     # Obtén los datos de la API
@@ -23,14 +23,14 @@ def home(request, page=1):
     data = response.json()
     info = data.get('info', {})
 
-    # Generamos el rango de páginas para la paginación
-    page_range = range(1, info['pages'] + 1)
+    # Limitar el rango de páginas a 3 (si hay más de 3 páginas)
+    page_range = range(1, min(info['pages'], 3) + 1)
 
     return render(request, 'home.html', {
         'images': images, 
         'favourite_list': favourite_list,
         'info': info,  # Asegúrate de enviar toda la info
-        'page_range': page_range,  # Pasa el rango de páginas a la plantilla
+        'page_range': page_range,  # Pasa el rango de páginas limitado
         'current_page': page  # Página actual
     })
 
