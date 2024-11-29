@@ -15,12 +15,24 @@ def index_page(request):
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
 def home(request, page=1):
-    search_msg = request.GET.get('query', '').strip()
-    images, total_pages = getAllImages(page=page, input=search_msg)
-    favourite_list = []
-    if request.user.is_authenticated:
-        favourite_list = getAllFavouritesByUser(request)
-    return render(request, 'home.html', {'images': images, 'total_pages': total_pages, 'favourite_list': favourite_list})
+    images = getAllImages(page=page)  # Ahora la función acepta el parámetro 'page'
+    favourite_list = []  # Aquí puedes implementar favoritos si lo necesitas
+
+    # Obtén los datos de la API
+    response = requests.get(f"https://rickandmortyapi.com/api/character/?page={page}")
+    data = response.json()
+    info = data.get('info', {})
+
+    # Generamos el rango de páginas para la paginación
+    page_range = range(1, info['pages'] + 1)
+
+    return render(request, 'home.html', {
+        'images': images, 
+        'favourite_list': favourite_list,
+        'info': info,  # Asegúrate de enviar toda la info
+        'page_range': page_range,  # Pasa el rango de páginas a la plantilla
+        'current_page': page  # Página actual
+    })
 
 def search(request):
     search_msg = request.POST.get('query', '').strip()  # Limpia el texto ingresado
@@ -38,15 +50,17 @@ def search(request):
 import requests
 
 def getAllImages(page=1, input=None):
-    url = f"https://rickandmortyapi.com/api/character/?page={page}&name={input}" if input else f"https://rickandmortyapi.com/api/character/?page={page}"
+    # Construir la URL con la página incluida
+    url = f"https://rickandmortyapi.com/api/character/?page={page}"
+    if input:
+        url += f"&name={input}"  # Si se pasa una búsqueda, añadimos el parámetro 'name'
+    
     response = requests.get(url)
     if response.status_code != 200:
-        return [], 0  # Manejo de error, asegurándose de devolver dos valores
-
+        return []  # Manejo de error
     data = response.json()
+    print(data)  # Verifica qué datos estás obteniendo desde la API
     characters = data.get('results', [])
-    total_pages = data.get('info', {}).get('pages', 0)  # Obtener el número total de páginas
-    
     cards = []
     for character in characters:
         cards.append({
@@ -57,8 +71,7 @@ def getAllImages(page=1, input=None):
             'location': character['location']['name'],
             'episode': character['episode'][0].split("/")[-1]
         })
-    
-    return cards, total_pages
+    return cards
 
 # Estas funciones se usan cuando el usuario está logueado en la aplicación.
 
