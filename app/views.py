@@ -15,35 +15,40 @@ def index_page(request):
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
 def home(request, page=1):
-    # Llamada a la API de Rick & Morty con el número de página
-    images = getAllImages(page=page)
-
-    # Hacer la solicitud a la API de Rick & Morty para obtener los datos
+    # Obtener los datos de la API con la página
     response = requests.get(f"https://rickandmortyapi.com/api/character/?page={page}")
     data = response.json()
+
+    # Comprobamos si la API respondió correctamente
+    if response.status_code != 200:
+        return render(request, 'home.html', {'images': [], 'favourite_list': [], 'info': {}, 'page_range': range(1, 1), 'current_page': page})
+
+    # Extraemos la información
     info = data.get('info', {})
+    characters = data.get('results', [])
 
-    # Generamos el rango de páginas con un máximo de 40 páginas
-    total_pages = min(info['pages'], 40)
+    # Generamos el rango de páginas
+    page_range = range(1, info['pages'] + 1)
 
-    # Aquí estamos limitando el rango a un máximo de 3 páginas alrededor de la página actual
-    # Este rango de páginas será de 3 páginas alrededor de la página actual (page)
-    if total_pages <= 3:
-        page_range = range(1, total_pages + 1)
-    else:
-        if page <= 2:
-            page_range = range(1, 4)
-        elif page >= total_pages - 1:
-            page_range = range(total_pages - 2, total_pages + 1)
-        else:
-            page_range = range(page - 1, page + 2)
+    # Procesamos los personajes
+    images = []
+    for character in characters:
+        images.append({
+            'id': character['id'],
+            'name': character['name'],
+            'image': character['image'],
+            'status': character['status'],
+            'location': character['location']['name'],
+            'episode': character['episode'][0].split("/")[-1]
+        })
 
+    # Enviamos los datos a la plantilla
     return render(request, 'home.html', {
         'images': images,
-        'favourite_list': [],  # Si tienes favoritos, añade la lógica aquí
+        'favourite_list': [],  # Aquí puedes agregar la lógica para los favoritos si es necesario
         'info': info,
         'page_range': page_range,
-        'current_page': page  # Asegúrate de que se pase la página actual
+        'current_page': page  # Página actual
     })
 
 def search(request):

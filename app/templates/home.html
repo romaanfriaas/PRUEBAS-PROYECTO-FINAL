@@ -7,9 +7,10 @@
         <!-- Selector de página -->
         <nav aria-label="Paginación">
             <ul class="pagination">
+                <!-- Botón "anterior" -->
                 {% if current_page > 1 %}
                 <li class="page-item">
-                    <a class="page-link" href="{% url 'home_page' current_page|add:-1 %}">⬅️</a>
+                    <a class="page-link" href="?page={{ current_page|add:-1 }}">⬅️</a>
                 </li>
                 {% else %}
                 <li class="page-item disabled">
@@ -17,15 +18,17 @@
                 </li>
                 {% endif %}
         
+                <!-- Enumerar todas las páginas -->
                 {% for page in page_range %}
                 <li class="page-item {% if page == current_page %}active{% endif %}">
-                    <a class="page-link" href="{% url 'home_page' page %}">{{ page }}</a>
+                    <a class="page-link" href="?page={{ page }}">{{ page }}</a>
                 </li>
                 {% endfor %}
         
-                {% if current_page < total_pages %}
+                <!-- Botón "siguiente" -->
+                {% if current_page < info.pages %}
                 <li class="page-item">
-                    <a class="page-link" href="{% url 'home_page' current_page|add:1 %}">➡️</a>
+                    <a class="page-link" href="?page={{ current_page|add:1 }}">➡️</a>
                 </li>
                 {% else %}
                 <li class="page-item disabled">
@@ -51,6 +54,7 @@
         {% else %}
         {% for img in images %}
         <div class="col">
+            <!-- Agregamos clases dinámicas según el estado -->
             <div class="card mb-3 ms-5 {% if img.status == 'Alive' %}border-success{% elif img.status == 'Dead' %}border-danger{% else %}border-warning{% endif %}" style="max-width: 540px;">
                 <div class="row g-0">
                     <div class="col-md-4">
