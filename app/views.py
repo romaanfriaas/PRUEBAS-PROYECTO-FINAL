@@ -15,25 +15,36 @@ def index_page(request):
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
 def home(request, page=1):
-    images = getAllImages(page=page)  # Ahora la función acepta el parámetro 'page'
-    favourite_list = []  # Aquí puedes implementar favoritos si lo necesitas
-
-    # Obtén los datos de la API
+    # Obtener los datos de la API con la página
     response = requests.get(f"https://rickandmortyapi.com/api/character/?page={page}")
     data = response.json()
+    # Comprobamos si la API respondió correctamente
+    if response.status_code != 200:
+        return render(request, 'home.html', {'images': [], 'favourite_list': [], 'info': {}, 'page_range': range(1, 1), 'current_page': page})
+    # Extraemos la información
     info = data.get('info', {})
-
-    # Generamos el rango de páginas para la paginación
+    characters = data.get('results', [])
+    # Generamos el rango de páginas
     page_range = range(1, info['pages'] + 1)
-
+    # Procesamos los personajes
+    images = []
+    for character in characters:
+        images.append({
+            'id': character['id'],
+            'name': character['name'],
+            'image': character['image'],
+            'status': character['status'],
+            'location': character['location']['name'],
+            'episode': character['episode'][0].split("/")[-1]
+        })
+    # Enviamos los datos a la plantilla
     return render(request, 'home.html', {
-        'images': images, 
-        'favourite_list': favourite_list,
-        'info': info,  # Asegúrate de enviar toda la info
-        'page_range': page_range,  # Pasa el rango de páginas a la plantilla
+        'images': images,
+        'favourite_list': [],  # Aquí puedes agregar la lógica para los favoritos si es necesario
+        'info': info,
+        'page_range': page_range,
         'current_page': page  # Página actual
     })
-
 
 def search(request):
     search_msg = request.POST.get('query', '').strip()  # Limpia el texto ingresado

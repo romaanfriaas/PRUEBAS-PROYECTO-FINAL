@@ -8,7 +8,7 @@
         <nav aria-label="Paginación">
             <ul class="pagination">
                 <!-- Botón "anterior" -->
-                {% if info.prev %}
+                {% if current_page > 1 %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ current_page|add:-1 }}">⬅️</a>
                 </li>
@@ -26,7 +26,7 @@
                 {% endfor %}
         
                 <!-- Botón "siguiente" -->
-                {% if info.next %}
+                {% if current_page < info.pages %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ current_page|add:1 }}">➡️</a>
                 </li>
@@ -74,23 +74,6 @@
                             <p class="card-text"><small class="text-body-secondary">Última ubicación: {{ img.location }}</small></p>
                             <p class="card-text"><small class="text-body-secondary">Episodio inicial: {{ img.episode }}</small></p>
                         </div>
-                        {% if request.user.is_authenticated %}
-                        <div class="card-footer text-center">
-                            <form method="post" action="{% url 'agregar-favorito' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="name" value="{{ img.name }}">
-                                <input type="hidden" name="url" value="{{ img.image }}">
-                                <input type="hidden" name="status" value="{{ img.status }}">
-                                <input type="hidden" name="last_location" value="{{ img.location }}">
-                                <input type="hidden" name="first_seen" value="{{ img.episode }}">
-                                {% if img in favourite_list %}
-                                <button type="submit" class="btn btn-primary btn-sm float-left" style="color:white" disabled>✔️ Ya está en favoritos</button>
-                                {% else %}
-                                <button type="submit" class="btn btn-primary btn-sm float-left" style="color:white">❤️ Añadir a favoritos</button>
-                                {% endif %}
-                            </form>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
