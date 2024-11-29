@@ -15,12 +15,44 @@ def index_page(request):
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
 def home(request):
-    images = getAllImages()  # Obtén todas las imágenes
-    favourite_list = []  # Puedes implementar favoritos si lo necesitas
+    # Obtén el número de página actual desde la URL (default: 1)
+    page = request.GET.get('page', 1)
+
+    # Llama a la API con el parámetro de página
+    url = f"https://rickandmortyapi.com/api/character/?page={page}"
+    response = requests.get(url)
+    if response.status_code != 200:
+        return render(request, 'home.html', {'images': [], 'favourite_list': []})
+
+    data = response.json()
+    characters = data.get('results', [])
+    info = data.get('info', {})  # Contiene información de la paginación
+
+    # Prepara los datos de los personajes
+    images = []
+    for character in characters:
+        images.append({
+            'id': character['id'],
+            'name': character['name'],
+            'image': character['image'],
+            'status': character['status'],
+            'location': character['location']['name'],
+            'episode': character['episode'][0].split("/")[-1],
+        })
+
+    favourite_list = []
     if request.user.is_authenticated:
         # Obtén los favoritos del usuario autenticado
         favourite_list = getAllFavouritesByUser(request)
-    return render(request, 'home.html', {'images': images, 'favourite_list': favourite_list})
+
+    # Renderiza la plantilla con los datos de paginación
+    context = {
+        'images': images,
+        'favourite_list': favourite_list,
+        'info': info,  # Información para los botones de paginación
+        'current_page': int(page),
+    }
+    return render(request, 'home.html', context)
 
 def search(request):
     search_msg = request.POST.get('query', '').strip()  # Limpia el texto ingresado
