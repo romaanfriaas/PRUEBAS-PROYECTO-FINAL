@@ -14,27 +14,42 @@ def index_page(request):
 # esta función obtiene 2 listados que corresponden a las imágenes de la API y los favoritos del usuario, y los usa para dibujar el correspondiente template.
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
-def home(request, page=1):
-    # Obtener el parámetro 'page' de la URL (si no existe, se asigna el valor 1 por defecto)
-    page = int(request.GET.get('page', 1))  # Asegúrate de que 'page' es un número entero
+def home(request):
+    # Obtenemos el parámetro 'page' de la URL (si no existe, asignamos 1 por defecto)
+    page = int(request.GET.get('page', 1))
 
-    images = getAllImages(page=page)  # Obtener los personajes de la página solicitada
-    favourite_list = []  # Aquí puedes implementar favoritos si lo necesitas
-
-    # Obtén los datos de la API
-    response = requests.get(f"https://rickandmortyapi.com/api/character/?page={page}")
+    # Hacer la solicitud a la API de Rick & Morty con el número de página
+    url = f"https://rickandmortyapi.com/api/character/?page={page}"
+    response = requests.get(url)
     data = response.json()
+
+    # Obtener los personajes de la página solicitada
+    characters = data.get('results', [])
+    
+    # Crear el objeto 'cards' con los datos necesarios para la plantilla
+    cards = []
+    for character in characters:
+        cards.append({
+            'id': character['id'],
+            'name': character['name'],
+            'image': character['image'],
+            'status': character['status'],
+            'location': character['location']['name'],
+            'episode': character['episode'][0].split("/")[-1]
+        })
+
+    # Obtener la información de paginación (total de páginas, siguiente, anterior)
     info = data.get('info', {})
 
-    # Limitar el rango de páginas a 3 (si hay más de 3 páginas)
+    # Crear un rango de páginas (por ejemplo, solo mostrar las 3 primeras páginas si hay más)
     page_range = range(1, min(info['pages'], 3) + 1)
 
+    # Renderizar la plantilla con los datos obtenidos
     return render(request, 'home.html', {
-        'images': images, 
-        'favourite_list': favourite_list,
-        'info': info,  # Asegúrate de enviar toda la info
-        'page_range': page_range,  # Pasa el rango de páginas limitado
-        'current_page': page  # Página actual
+        'images': cards,  # Pasar las imágenes (personajes)
+        'info': info,     # Pasar la información de paginación
+        'page_range': page_range,  # Limitar el rango de páginas a 3 (si es necesario)
+        'current_page': page  # Pasar la página actual
     })
 
 def search(request):
