@@ -15,29 +15,35 @@ def index_page(request):
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
 def home(request, page=1):
-    images = getAllImages(page=page)  # Asumiendo que esta función devuelve las imágenes para la página
-    favourite_list = []  # Aquí puedes implementar tus favoritos si lo necesitas
+    # Llamada a la API de Rick & Morty con el número de página
+    images = getAllImages(page=page)
 
-    # Obtén los datos de la API
+    # Hacer la solicitud a la API de Rick & Morty para obtener los datos
     response = requests.get(f"https://rickandmortyapi.com/api/character/?page={page}")
     data = response.json()
     info = data.get('info', {})
 
-    # Generamos el rango de páginas para la paginación
-    page_range = range(1, info['pages'] + 1)
+    # Generamos el rango de páginas con un máximo de 40 páginas
+    total_pages = min(info['pages'], 40)
 
-    # Calcular la página anterior y la siguiente
-    prev_page = max(1, page - 1)
-    next_page = min(info['pages'], page + 1)
+    # Aquí estamos limitando el rango a un máximo de 3 páginas alrededor de la página actual
+    # Este rango de páginas será de 3 páginas alrededor de la página actual (page)
+    if total_pages <= 3:
+        page_range = range(1, total_pages + 1)
+    else:
+        if page <= 2:
+            page_range = range(1, 4)
+        elif page >= total_pages - 1:
+            page_range = range(total_pages - 2, total_pages + 1)
+        else:
+            page_range = range(page - 1, page + 2)
 
     return render(request, 'home.html', {
-        'images': images, 
-        'favourite_list': favourite_list,
-        'info': info, 
-        'page_range': page_range, 
-        'current_page': page,
-        'prev_page': prev_page,
-        'next_page': next_page,
+        'images': images,
+        'favourite_list': [],  # Si tienes favoritos, añade la lógica aquí
+        'info': info,
+        'page_range': page_range,
+        'current_page': page  # Asegúrate de que se pase la página actual
     })
 
 def search(request):

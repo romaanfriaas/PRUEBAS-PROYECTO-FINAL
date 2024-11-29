@@ -9,7 +9,7 @@
             <ul class="pagination">
                 {% if current_page > 1 %}
                 <li class="page-item">
-                    <a class="page-link" href="{% url 'home_page' prev_page %}">⬅️</a>
+                    <a class="page-link" href="{% url 'home_page' current_page|add:-1 %}">⬅️</a>
                 </li>
                 {% else %}
                 <li class="page-item disabled">
@@ -23,9 +23,9 @@
                 </li>
                 {% endfor %}
         
-                {% if current_page < info.pages %}
+                {% if current_page < total_pages %}
                 <li class="page-item">
-                    <a class="page-link" href="{% url 'home_page' next_page %}">➡️</a>
+                    <a class="page-link" href="{% url 'home_page' current_page|add:1 %}">➡️</a>
                 </li>
                 {% else %}
                 <li class="page-item disabled">
