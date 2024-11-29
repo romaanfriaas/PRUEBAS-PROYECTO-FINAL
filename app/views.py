@@ -14,25 +14,13 @@ def index_page(request):
 # esta función obtiene 2 listados que corresponden a las imágenes de la API y los favoritos del usuario, y los usa para dibujar el correspondiente template.
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
-def home(request):
-    # Obtener la página actual y el texto de búsqueda
-    page = int(request.GET.get('page', 1))  # Por defecto la página es 1
+def home(request, page=1):
     search_msg = request.GET.get('query', '').strip()
-
-    if not search_msg:
-        search_msg = None  # Si no hay texto de búsqueda, traer todos los personajes
-    
-    # Obtener imágenes de la API y total de páginas disponibles
     images, total_pages = getAllImages(page=page, input=search_msg)
-
-    favourite_list = []  # Aquí puedes agregar lógica para favoritos si lo necesitas
-
-    return render(request, 'home.html', {
-        'images': images,
-        'favourite_list': favourite_list,
-        'total_pages': total_pages,
-        'current_page': page
-    })
+    favourite_list = []
+    if request.user.is_authenticated:
+        favourite_list = getAllFavouritesByUser(request)
+    return render(request, 'home.html', {'images': images, 'total_pages': total_pages, 'favourite_list': favourite_list})
 
 def search(request):
     search_msg = request.POST.get('query', '').strip()  # Limpia el texto ingresado
@@ -50,17 +38,15 @@ def search(request):
 import requests
 
 def getAllImages(page=1, input=None):
-    # Construir la URL con la página incluida
-    url = f"https://rickandmortyapi.com/api/character/?page={page}"
-    if input:
-        url += f"&name={input}"  # Si se pasa una búsqueda, añadimos el parámetro 'name'
-    
+    url = f"https://rickandmortyapi.com/api/character/?page={page}&name={input}" if input else f"https://rickandmortyapi.com/api/character/?page={page}"
     response = requests.get(url)
     if response.status_code != 200:
-        return []  # Manejo de error
+        return [], 0  # Manejo de error, asegurándose de devolver dos valores
+
     data = response.json()
-    print(data)  # Verifica qué datos estás obteniendo desde la API
     characters = data.get('results', [])
+    total_pages = data.get('info', {}).get('pages', 0)  # Obtener el número total de páginas
+    
     cards = []
     for character in characters:
         cards.append({
@@ -71,7 +57,8 @@ def getAllImages(page=1, input=None):
             'location': character['location']['name'],
             'episode': character['episode'][0].split("/")[-1]
         })
-    return cards
+    
+    return cards, total_pages
 
 # Estas funciones se usan cuando el usuario está logueado en la aplicación.
 
