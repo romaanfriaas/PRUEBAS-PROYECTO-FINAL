@@ -50,14 +50,17 @@ def search(request):
 import requests
 
 def getAllImages(page=1, input=None):
-    url = f"https://rickandmortyapi.com/api/character/?page={page}&name={input}" if input else f"https://rickandmortyapi.com/api/character/?page={page}"
+    # Construir la URL con la página incluida
+    url = f"https://rickandmortyapi.com/api/character/?page={page}"
+    if input:
+        url += f"&name={input}"  # Si se pasa una búsqueda, añadimos el parámetro 'name'
+    
     response = requests.get(url)
     if response.status_code != 200:
-        return [], 0  # Manejo de error
+        return []  # Manejo de error
     data = response.json()
+    print(data)  # Verifica qué datos estás obteniendo desde la API
     characters = data.get('results', [])
-    total_pages = data.get('info', {}).get('pages', 1)
-    
     cards = []
     for character in characters:
         cards.append({
@@ -68,7 +71,7 @@ def getAllImages(page=1, input=None):
             'location': character['location']['name'],
             'episode': character['episode'][0].split("/")[-1]
         })
-    return cards, total_pages
+    return cards
 
 # Estas funciones se usan cuando el usuario está logueado en la aplicación.
 
