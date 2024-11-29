@@ -14,27 +14,24 @@ def index_page(request):
 # esta función obtiene 2 listados que corresponden a las imágenes de la API y los favoritos del usuario, y los usa para dibujar el correspondiente template.
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
-def home(request, page=1):
-    # Obtener el parámetro 'page' de la URL (si no existe, se asigna el valor 1 por defecto)
-    page = int(request.GET.get('page', 1))  # Asegúrate de que 'page' es un número entero
+def home(request):
+    # Obtener la página actual y el texto de búsqueda
+    page = int(request.GET.get('page', 1))  # Por defecto la página es 1
+    search_msg = request.GET.get('query', '').strip()
 
-    images = getAllImages(page=page)  # Obtener los personajes de la página solicitada
-    favourite_list = []  # Aquí puedes implementar favoritos si lo necesitas
+    if not search_msg:
+        search_msg = None  # Si no hay texto de búsqueda, traer todos los personajes
+    
+    # Obtener imágenes de la API y total de páginas disponibles
+    images, total_pages = getAllImages(page=page, input=search_msg)
 
-    # Obtén los datos de la API
-    response = requests.get(f"https://rickandmortyapi.com/api/character/?page={page}")
-    data = response.json()
-    info = data.get('info', {})
-
-    # Limitar el rango de páginas a 3 (si hay más de 3 páginas)
-    page_range = range(1, min(info['pages'], 3) + 1)
+    favourite_list = []  # Aquí puedes agregar lógica para favoritos si lo necesitas
 
     return render(request, 'home.html', {
-        'images': images, 
+        'images': images,
         'favourite_list': favourite_list,
-        'info': info,  # Asegúrate de enviar toda la info
-        'page_range': page_range,  # Pasa el rango de páginas limitado
-        'current_page': page  # Página actual
+        'total_pages': total_pages,
+        'current_page': page
     })
 
 def search(request):
@@ -53,17 +50,14 @@ def search(request):
 import requests
 
 def getAllImages(page=1, input=None):
-    # Construir la URL con la página incluida
-    url = f"https://rickandmortyapi.com/api/character/?page={page}"
-    if input:
-        url += f"&name={input}"  # Si se pasa una búsqueda, añadimos el parámetro 'name'
-    
+    url = f"https://rickandmortyapi.com/api/character/?page={page}&name={input}" if input else f"https://rickandmortyapi.com/api/character/?page={page}"
     response = requests.get(url)
     if response.status_code != 200:
-        return []  # Manejo de error
+        return [], 0  # Manejo de error
     data = response.json()
-    print(data)  # Verifica qué datos estás obteniendo desde la API
     characters = data.get('results', [])
+    total_pages = data.get('info', {}).get('pages', 1)
+    
     cards = []
     for character in characters:
         cards.append({
@@ -74,7 +68,7 @@ def getAllImages(page=1, input=None):
             'location': character['location']['name'],
             'episode': character['episode'][0].split("/")[-1]
         })
-    return cards
+    return cards, total_pages
 
 # Estas funciones se usan cuando el usuario está logueado en la aplicación.
 

@@ -3,58 +3,55 @@
 <main>
     <h1 class="text-center">Buscador Rick & Morty</h1>
 
+    <!-- Buscador del sitio -->
+    <div class="d-flex justify-content-center" style="margin-bottom: 1%">
+        <form class="d-flex" action="{% url 'buscar' %}" method="GET">
+            {% csrf_token %}
+            <input class="form-control me-2" type="search" name="query" value="{{ request.GET.query }}" placeholder="Escribí una palabra" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <!-- Paginación de resultados -->
     <div class="d-flex justify-content-end" style="margin-bottom: 1%; margin-right: 2rem;">
-        <!-- Selector de página -->
-        <nav aria-label="Paginación">
+        <nav aria-label="Page navigation example">
             <ul class="pagination">
-                <!-- Botón "anterior" -->
-                {% if info.prev %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ current_page|add:-1 }}">⬅️</a>
-                </li>
+                {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page - 1 }}&query={{ request.GET.query }}">⬅️</a>
+                    </li>
                 {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link">⬅️</a>
-                </li>
+                    <li class="page-item disabled">
+                        <a class="page-link">⬅️</a>
+                    </li>
                 {% endif %}
-        
-                <!-- Enumerar todas las páginas (limitadas a 3) -->
-                {% for page in page_range %}
-                <li class="page-item {% if page == current_page %}active{% endif %}">
-                    <a class="page-link" href="?page={{ page }}">{{ page }}</a>
-                </li>
+
+                {% for i in range(1, total_pages + 1) %}
+                    <li class="page-item {% if i == current_page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}&query={{ request.GET.query }}">{{ i }}</a>
+                    </li>
                 {% endfor %}
-        
-                <!-- Botón "siguiente" -->
-                {% if info.next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ current_page|add:1 }}">➡️</a>
-                </li>
+
+                {% if current_page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page + 1 }}&query={{ request.GET.query }}">➡️</a>
+                    </li>
                 {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link">➡️</a>
-                </li>
+                    <li class="page-item disabled">
+                        <a class="page-link">➡️</a>
+                    </li>
                 {% endif %}
             </ul>
         </nav>
     </div>
 
-    <div class="d-flex justify-content-center" style="margin-bottom: 1%">
-        <!-- Buscador del sitio -->
-        <form class="d-flex" action="{% url 'buscar' %}" method="POST">
-            {% csrf_token %}
-            <input class="form-control me-2" type="search" name="query" placeholder="Escribí una palabra" aria-label="Search">
-            <button class="btn btn-outline-success" type="submit">Buscar</button>
-        </form>
-    </div>
-
+    <!-- Galería de imágenes -->
     <div class="row row-cols-1 row-cols-md-3 g-4">
         {% if images|length == 0 %}
         <h2 class="text-center">La búsqueda no arrojó resultados...</h2>
         {% else %}
         {% for img in images %}
         <div class="col">
-            <!-- Agregamos clases dinámicas según el estado -->
             <div class="card mb-3 ms-5 {% if img.status == 'Alive' %}border-success{% elif img.status == 'Dead' %}border-danger{% else %}border-warning{% endif %}" style="max-width: 540px;">
                 <div class="row g-0">
                     <div class="col-md-4">
@@ -74,23 +71,6 @@
                             <p class="card-text"><small class="text-body-secondary">Última ubicación: {{ img.location }}</small></p>
                             <p class="card-text"><small class="text-body-secondary">Episodio inicial: {{ img.episode }}</small></p>
                         </div>
-                        {% if request.user.is_authenticated %}
-                        <div class="card-footer text-center">
-                            <form method="post" action="{% url 'agregar-favorito' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="name" value="{{ img.name }}">
-                                <input type="hidden" name="url" value="{{ img.image }}">
-                                <input type="hidden" name="status" value="{{ img.status }}">
-                                <input type="hidden" name="last_location" value="{{ img.location }}">
-                                <input type="hidden" name="first_seen" value="{{ img.episode }}">
-                                {% if img in favourite_list %}
-                                <button type="submit" class="btn btn-primary btn-sm float-left" style="color:white" disabled>✔️ Ya está en favoritos</button>
-                                {% else %}
-                                <button type="submit" class="btn btn-primary btn-sm float-left" style="color:white">❤️ Añadir a favoritos</button>
-                                {% endif %}
-                            </form>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
