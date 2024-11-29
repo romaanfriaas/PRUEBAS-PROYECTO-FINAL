@@ -15,6 +15,9 @@ def index_page(request):
 # si el opcional de favoritos no está desarrollado, devuelve un listado vacío.
 
 def home(request, page=1):
+    # Obtener el parámetro 'page' de la URL (si no existe, se asigna el valor 1 por defecto)
+    page = int(request.GET.get('page', 1))  # Asegúrate de que 'page' es un número entero
+
     images = getAllImages(page=page)  # Obtener los personajes de la página solicitada
     favourite_list = []  # Aquí puedes implementar favoritos si lo necesitas
 
